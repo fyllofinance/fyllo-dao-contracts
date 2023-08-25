@@ -1,0 +1,10 @@
+reports:
+  exclude_paths:
+    - contracts/mocks/*.*
+
+networks:
+  development:
+    cmd_settings:
+      accounts: 10
+      chain_id: 1337
+
