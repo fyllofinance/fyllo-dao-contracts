@@ -503,7 +503,7 @@ def vote_for_gauge_weights(_gauge_addr: address, _user_weight: uint256):
     next_time: uint256 = (block.timestamp + WEEK) / WEEK * WEEK
     assert lock_end > next_time, "Your token lock expires too soon"
     assert (_user_weight >= 0) and (_user_weight <= 10000), "You used all your voting power"
-    assert block.timestamp >= self.last_user_vote[msg.sender][_gauge_addr] + WEIGHT_VOTE_DELAY, "Cannot vote so often"
+    # assert block.timestamp >= self.last_user_vote[msg.sender][_gauge_addr] + WEIGHT_VOTE_DELAY, "Cannot vote so often"
 
     gauge_type: int128 = self.gauge_types_[_gauge_addr] - 1
     assert gauge_type >= 0, "Gauge not added"

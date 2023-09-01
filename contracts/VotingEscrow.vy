@@ -80,6 +80,9 @@ event Supply:
     prevSupply: uint256
     supply: uint256
 
+event DepositWhitelistChanged:
+    addr: indexed(address)
+    enable: bool
 
 WEEK: constant(uint256) = 7 * 86400  # all future times are rounded by week
 MAXTIME: constant(uint256) = 4 * 365 * 86400  # 4 years
@@ -113,6 +116,7 @@ smart_wallet_checker: public(address)
 admin: public(address)  # Can and will be a smart contract
 future_admin: public(address)
 
+deposit_whitelist: public(HashMap[address, bool]) # whitelist for deposit_for
 
 @external
 def __init__(token_addr: address, _name: String[64], _symbol: String[32], _version: String[32]):
@@ -393,11 +397,13 @@ def checkpoint():
 def deposit_for(_addr: address, _value: uint256):
     """
     @notice Deposit `_value` tokens for `_addr` and add to the lock
-    @dev Anyone (even a smart contract) can deposit for someone else, but
+    @dev The address in deposit_whitelist (even a smart contract) can deposit for someone else, but
          cannot extend their locktime and deposit for a brand new user
     @param _addr User's wallet address
     @param _value Amount to add to user's lock
     """
+    assert self.deposit_whitelist[msg.sender] # dev: whilte address only
+
     _locked: LockedBalance = self.locked[_addr]
 
     assert _value > 0  # dev: need non-zero value
@@ -669,3 +675,12 @@ def changeController(_newController: address):
     """
     assert msg.sender == self.controller
     self.controller = _newController
+
+@external
+def change_deposit_whitelist(_addr: address, _enable: bool):
+    """
+    @notice Change deposit_for whitelist
+    """
+    assert msg.sender == self.admin  # dev: admin only
+    self.deposit_whitelist[_addr] = _enable
+    log DepositWhitelistChanged(_addr, _enable)

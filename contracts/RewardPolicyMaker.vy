@@ -1,6 +1,6 @@
 # @version 0.2.12
 """
-@title Fyllo DAO Token proxy
+@title DAO Token proxy
 @author Fyllo Finance
 @license MIT
 @notice configurable ERC20 with piecewise-linear mining supply.

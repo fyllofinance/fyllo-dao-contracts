@@ -350,11 +350,11 @@ def _checkpoint(addr: address):
     prev_epoch: uint256 = self.point_current_epoch_time
     new_rate: uint256 = rate
     next_epoch: uint256 = prev_epoch + WEEK
+    _totalSupply: uint256 = self.lpTotalSupply
 
     if block.timestamp > next_epoch:
-        new_totalSupply: uint256 = ERC20(self.lp_token).totalSupply()
-        if new_totalSupply > 0:
-            new_rate = self.point_proportion * new_totalSupply / WEEK
+        if _totalSupply > 0:
+            new_rate = self.point_proportion * _totalSupply / WEEK
         self.point_current_epoch_time = next_epoch
         self.point_rate = new_rate
 
@@ -362,7 +362,6 @@ def _checkpoint(addr: address):
     if block.timestamp > _point_period_timestamp and not self.is_killed:
         prev_week_time: uint256 = _point_period_timestamp
         week_time: uint256 = min((_point_period_timestamp + WEEK) / WEEK * WEEK, block.timestamp)
-        _totalSupply: uint256 = self.lpTotalSupply
 
         for i in range(500):
             dt: uint256 = week_time - prev_week_time
@@ -417,6 +416,7 @@ def user_checkpoint(addr: address) -> bool:
     assert (msg.sender == addr) or (msg.sender == self.minter)  # dev: unauthorized
     self._checkpoint(addr)
     self._checkpoint_dao(addr)
+    self._checkpoint_rewards(addr, False, ZERO_ADDRESS)
     self._update_liquidity_limit(addr, self._balance_of(addr), self.totalSupply)
     return True
 
@@ -502,6 +502,7 @@ def claim_rewards(_addr: address = msg.sender, _receiver: address = ZERO_ADDRESS
     self._checkpoint_rewards(_addr, True, _receiver)
 
     # update user's point amount and working balance
+    self._checkpoint_dao(_addr)
     self._checkpoint(_addr)
     self._update_liquidity_limit(_addr, self._balance_of(_addr), self.totalSupply)
 
